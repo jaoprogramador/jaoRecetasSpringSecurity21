@@ -50,5 +50,14 @@ GET http://localhost:8090/api/categorias/page?pageNumber=0&pageSize=5&sortField=
 - podemos tener esta anotación a nivel global de controller pero podemos poner a nivel de método @PreAuthorize(“hasAuthority(‘READ según el permiso
   También podemos poner permisos según rol
 
+50.- manejo excepciones en seguridad.
+-No siempre se interceptan los errores de spring security en un @ControllerAdvice
+- Tenemos multitud de excepciones de seguridad:
+- En globalExceptionHandeler crea,os capturas de AuetenticatedException, AccesDeniedException… y vemos que no nos llegan a capturar
+- Creamos un componente CustomAuthenticatedEntryPointe implementar AuthenticatedEntryPointe
+  Implementamos y alimentamos Errorinfo según el error según el constructor, ParameterException, GlobalExceptionHandler,
+  Creamos otro componente error CustomAccesDeniedHandleer
+  En la SecurityConfig tenemos que definir los beans que cargarán estos errores
+- Vamos a postman he intentamos hacer un post con un usuario con permiso de lectura o inexistente y nos modtrará el error personalizado
 
  - 
