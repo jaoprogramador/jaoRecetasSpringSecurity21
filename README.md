@@ -60,4 +60,26 @@ GET http://localhost:8090/api/categorias/page?pageNumber=0&pageSize=5&sortField=
   En la SecurityConfig tenemos que definir los beans que cargarán estos errores
 - Vamos a postman he intentamos hacer un post con un usuario con permiso de lectura o inexistente y nos modtrará el error personalizado
 
- - 
+51.- Spring security: JWT, usando json web token
+- Añadimos dependencia java-jwt al pom
+- vamos a https://www.base64encode.org/ copiamos un texto sobre el que crear la clave codificada, damos encode y copiamos el token
+- Creamos en application.propierties el secret, el tiempo de duración y el generador. Copiamos el token en com.laboratorio.jwt.secret-word 
+-Copiamos en https://www.base64decode.org/ podemos decodificar el token
+En ervice creamos un paquete C:\Users\user\Documents\LINKEDINPosts\WSSpringBoot21\jaoRestaurante48\src\main\java\com\jao\recetas\services\security y pegamos las clases de UserDetailsServiceImpl, UsuarioService y UsuarioServiceImpl
+Creamos JwtUtilsService.java que tendra las utilidades de JWT
+Recuperamos las variables de jwt con value
+Creamos un método para crear el token y otro para validarlo
+Creamos un usuarioController, creamos un LoginInfo y tokenInfo que devolverá mi crontroller
+En userDetailsServiceImpl creamos  el método login con TokenInfo
+Creamos una excepción personalizada InvalidUserException
+Hacemos la autenticación
+Desde usuarioController llamamos al servicio de seguridad que hemos implementado
+En globalExceptionHandler capturamos los errores
+Creamos jwtRequestFilter en security
+Modificamos la configuración global para usar estás clases de jwt e implementamos los métodos de builder.
+Vamos a postman, nos logamos, nos da un token si el usuario existe con clave y con ese token consultamos las recetas pasando bearer y token
+Si el token no es el dado tras login no da acceso, si el usuario y pass no es correcto no nos da token, si solo pasamos un parametro en login nos dice que usu y pass son obligatorios
+- Web interesante www.jwt.io donde podemos ver info del token creado y podos ver la vericidad del firma del token pasando la clave del application.properties
+
+
+Probamos desde postman el POST de http://localhost:8090/api/usuarios/login

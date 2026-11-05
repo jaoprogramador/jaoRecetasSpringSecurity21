@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -28,30 +29,32 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
+                                                   JwtRequestFilter jwtRequestFilter,
                                                    CustomAuthenticationEntryPoint entryPoint,
                                                    CustomAccessDeniedHandler deniedHandler) throws Exception {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(http -> {
                     // Endpoints públicos
-                    http.requestMatchers(HttpMethod.GET).permitAll();
+                    http.requestMatchers("/api/usuarios/login").permitAll();
                     // Endpoints privados
+                    http.requestMatchers(HttpMethod.GET).hasAuthority("READ");
                     http.requestMatchers(HttpMethod.POST, "/api/**").hasAuthority("WRITE");
                     http.requestMatchers(HttpMethod.PUT, "/api/**").hasAuthority("WRITE");
                     http.requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN");
                     // Endpoints no definidos
                     http.anyRequest().authenticated();
-                    // http.anyRequest().denyAll();
                 })
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(deniedHandler)
                 )
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(auth -> auth.disable())
                 .build();
     }
 

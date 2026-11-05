@@ -4,6 +4,7 @@ import com.jao.recetas.dto.ErrorInfo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -53,5 +54,12 @@ public class GlobalExceptionHandler {
         ErrorInfo errorInfo = new ErrorInfo(5, errors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorInfo);
+    }
+
+
+    @ExceptionHandler({UsernameNotFoundException.class, InvalidUserException.class})
+    public ResponseEntity<ErrorInfo> invalidUserError(Exception e) {
+        ErrorInfo error = new ErrorInfo(6, e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 }

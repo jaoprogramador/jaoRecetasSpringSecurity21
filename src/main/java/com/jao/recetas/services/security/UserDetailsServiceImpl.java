@@ -1,13 +1,20 @@
-package com.jao.recetas.services;
+package com.jao.recetas.services.security;
 
 import com.jao.recetas.model.Usuario;
+import com.jao.recetas.security.data.LoginInfo;
+import com.jao.recetas.security.data.TokenInfo;
+import com.jao.recetas.util.exception.InvalidUserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +26,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UsuarioService usuarioService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtilsService jwtUtilsService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -47,5 +56,24 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .disabled(!usuario.isActivo())
                 .authorities(authorityList)
                 .build();
+    }
+
+    public TokenInfo login(LoginInfo loginInfo) throws UsernameNotFoundException, InvalidUserException {
+        String username = loginInfo.getUsername();
+        String password = loginInfo.getPassword();
+
+        UserDetails userDetails = this.loadUserByUsername(username);
+        if (!userDetails.isEnabled()) {
+            throw new InvalidUserException("El usuario está deshabilitado");
+        }
+
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            throw new InvalidUserException("Las credenciales suministradas son incorrectas");
+        }
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return new TokenInfo(this.jwtUtilsService.createToken(authentication));
     }
 }

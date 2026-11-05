@@ -1,4 +1,4 @@
-package com.jao.recetas.services;
+package com.jao.recetas.services.security;
 
 import com.jao.recetas.model.Usuario;
 
