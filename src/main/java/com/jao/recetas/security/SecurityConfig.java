@@ -1,42 +1,76 @@
 package com.jao.recetas.security;
 
+import com.jao.recetas.util.exception.CustomAccessDeniedHandler;
+import com.jao.recetas.util.exception.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
+                                                   CustomAuthenticationEntryPoint entryPoint,
+                                                   CustomAccessDeniedHandler deniedHandler) throws Exception {
+        return httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(http -> {
+                    // Endpoints públicos
+                    http.requestMatchers(HttpMethod.GET).permitAll();
+                    // Endpoints privados
+                    http.requestMatchers(HttpMethod.POST, "/api/**").hasAuthority("WRITE");
+                    http.requestMatchers(HttpMethod.PUT, "/api/**").hasAuthority("WRITE");
+                    http.requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN");
+                    // Endpoints no definidos
+                    http.anyRequest().authenticated();
+                    // http.anyRequest().denyAll();
+                })
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler(deniedHandler)
+                )
+                .httpBasic(Customizer.withDefaults())
+                .build();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-//   @Bean
-//    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-//        return new InMemoryUserDetailsManager(
-//                User.withUsername("jaoprogramador")
-//                        .password(passwordEncoder().encode("1234"))
-//                        .roles("USER")
-//                        .build());
-//    }
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // Deshabilitado para pruebas locales en Postman
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated() // Exige autenticación en cualquier endpoint
-                )
-                .httpBasic(httpBasic -> {}); // Habilita HTTP Basic para que Postman envíe las credenciales
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));
 
-        return http.build();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
+}
+
 }

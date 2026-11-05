@@ -5,8 +5,12 @@ import com.jao.recetas.dto.RecetaResponse;
 import com.jao.recetas.services.RecetasService;
 import com.jao.recetas.util.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,13 +18,27 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/recetas")
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Slf4j
+
+
 public class RecetasController {
 
     private final RecetasService recetasService;
+    private void showAuthenticationData() {
+        Authentication authentication = SecurityContextHolder.getContext()
+                .getAuthentication();
+        log.info("Usuario conectado: {}", authentication.getPrincipal());
+        log.info("Permisos usuario: {}", authentication.getAuthorities());
+        log.info("Detalles: {}", authentication.getDetails());
+        log.info("¿Autenticado? : {}", authentication.isAuthenticated());
+    }
+
 
     @GetMapping()
+    //@PreAuthorize("hasAuthority('READ')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity <?> getAll(){
+        this.showAuthenticationData();
         List<RecetaResponse> recetas= this.recetasService.findAllOrderByTituloAsc();
         if (recetas.isEmpty()){
             return ResponseEntity.noContent().build();
@@ -49,6 +67,7 @@ public class RecetasController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasAuthority('WRITE')")
     public ResponseEntity <?> create(@RequestBody RecetaRequest recetaRequest) {
         try {
             RecetaResponse receta = this.recetasService.createReceta(recetaRequest);
@@ -56,6 +75,7 @@ public class RecetasController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            log.info("ERROR:::create : {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Ha ocurrido un error inesperado");
         }
 
@@ -69,6 +89,7 @@ public class RecetasController {
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+
             return ResponseEntity.internalServerError().body("Ha ocurrido un error inesperado");
         }
     }

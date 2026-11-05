@@ -33,3 +33,22 @@ GET http://localhost:8090/api/categorias/page?pageNumber=0&pageSize=5&sortField=
 -creamos un útil-runDatabase para cargar los datos la primera vez que se carga
 - modificamos el SecurityConfig para que en vez de tirar de memoria con InMemoryUserDetailsManager y usar SecurityFilterChain
 - Testing con postman: ahora para poder consultar el api necesitamos hacerlo con un usuario de bd y clave encriptada
+
+48.- Spring Boot Security: configuración global de la seguridad(habilitar endpoints, deshabilitar paths, dar permisos segun rol de escritura)
+  -marcamos la clase de conf security con EnableWebSecurity
+  -creamos el bean SecurityFilterChain
+ - esto por si no nos securiza nada porque nos permite consultar el api con usu y pass incorrectos.
+ - creamos una configuración que cualquier endpoint este securizado por usu y pass de BD
+  -creamos otra configuración sin CRFS porque no usamos formularios, es un api, quitamos los estados de sesión, y definimos los endpoints que habilitamos pot tipo GET y POST según los roles definidos en BD, read, write
+  -ahora en postman si intentamos modificar una categoría sin tener permiso de escritura no nos dejará
+ - como es un api rest habilitamos los CORS y definimos un bean CORS
+
+49.- Spring Boot Security: seguridad a nivel de método
+- configuramos nuestro security config con @EnableMethodSecurity para habilitar seguridad a nivel de metodo
+- en el controler ponemos la anotación @Preautorize(“permitAll()” lo que hace que permite usar todo el controlador aunque no estemos autenticados
+- cambiamsos la anotación y ponemos @Preautorized (“insAuthenticated) de tal forma que nos permite consultar el controller solo si estamos autenticados
+- podemos tener esta anotación a nivel global de controller pero podemos poner a nivel de método @PreAuthorize(“hasAuthority(‘READ según el permiso
+  También podemos poner permisos según rol
+
+
+ - 

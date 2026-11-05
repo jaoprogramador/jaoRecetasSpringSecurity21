@@ -44,7 +44,16 @@ public class Recetas {
     private Categoria categoria;
 
     public Recetas(RecetaRequest request) {
+        this.categoriaId= request.getCategoriaId();
+        this.descripcion= request.getDescripcion();
         this.titulo = request.getTitulo();
+        this.tiempoPreparacionMinutos=request.getTiempoPreparacionMinutos();
+        this.porciones=request.getPorciones();
+
+
+    }
+
+    private void nom() {
     }
 
     public Recetas(Integer id, String titulo) {
