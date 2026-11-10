@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(http -> {
                     // Endpoints públicos
                     http.requestMatchers("/api/usuarios/login").permitAll();
+                    http.requestMatchers("/api/usuarios/email").permitAll();
                     // Endpoints privados
                     http.requestMatchers(HttpMethod.GET).hasAuthority("READ");
                     http.requestMatchers(HttpMethod.POST, "/api/**").hasAuthority("WRITE");

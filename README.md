@@ -2,7 +2,7 @@ Requisitos
 ############
 Java 21 con Spring Boot
 Docker Desktop -  Contenedor MySQL
-
+    docker start postgres-recetas
 API para gestionar las recetas grastronomicas organizadas por categorias
 Endpoints:
     http://localhost:8090/api/recetas/5
@@ -83,3 +83,13 @@ Si el token no es el dado tras login no da acceso, si el usuario y pass no es co
 
 
 Probamos desde postman el POST de http://localhost:8090/api/usuarios/login
+
+52.- Spring mail . Vamos a crear un servicio y un endpoint para mandar mails 
+- creamos el starter mail
+- Creamos una clave en Gmail de doble autenticacion en mi usuario de gmail  y la variable del sistema
+- Creamos la configuración en application.properties
+- Creamos un serviceMail , impl. El mailInfo, el controller y el exception en el GlobalExceptionHandler
+- creamos en endpoint en usuarios
+- tenemos que habilitar el endpoint en el securityConfig
+- Probamos en postman: nos logamos en el endpoint de http://localhost:8090/api/usuarios/login , nos da un token y desde http://localhost:8090/api/usuarios/email nos permite crear un JSON
+para mandar el mail. Si el token no es correcto nos devuelve codigo.9.No está autorizado para hacer esta solicitud
