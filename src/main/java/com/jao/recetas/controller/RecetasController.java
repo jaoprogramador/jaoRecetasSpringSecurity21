@@ -34,10 +34,21 @@ public class RecetasController {
     }
 
 
-    @GetMapping()
+    @GetMapping(headers = "X-API-Version=1.0")
     //@PreAuthorize("hasAuthority('READ')")
     @PreAuthorize("permitAll()")
-    public ResponseEntity <?> getAll(){
+    public ResponseEntity <?> getAllV1(){
+        this.showAuthenticationData();
+        List<RecetaResponse> recetas= this.recetasService.findAllOrderByTituloAsc();
+        if (recetas.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(recetas);
+    }
+    @GetMapping(headers = "X-API-Version=2.0")
+    //@PreAuthorize("hasAuthority('READ')")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity <?> getAllV2(){
         this.showAuthenticationData();
         List<RecetaResponse> recetas= this.recetasService.findAllOrderByTituloAsc();
         if (recetas.isEmpty()){

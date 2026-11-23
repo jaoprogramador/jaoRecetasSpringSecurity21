@@ -59,7 +59,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         log.info("==============================");
         return User.withUsername(username)
                 .password(usuario.getPassword())
-                .disabled(!usuario.isActivo())
+                .disabled(!usuario.isVerificado())
+                .accountLocked(!usuario.isActivo())
                 .authorities(authorityList)
                 .build();
     }
@@ -91,6 +92,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         log.info("==============================");
 
         if (!userDetails.isEnabled()) {
+            throw new InvalidUserException("El usuario no ha verificado su dirección de correo");
+        }
+
+        if (!userDetails.isAccountNonLocked()) {
             throw new InvalidUserException("El usuario está deshabilitado");
         }
 

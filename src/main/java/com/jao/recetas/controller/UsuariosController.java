@@ -27,10 +27,16 @@ public class UsuariosController {
         return ResponseEntity.ok(this.userDetailsService.login(loginInfo));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<String> createUser(@Valid @RequestBody UsuarioRequest request) {
-        this.usuarioService.createUser(request);
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@Valid @RequestBody UsuarioRequest request) {
+        this.usuarioService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("El usuario se ha creado correctamente");
+    }
+
+    @GetMapping("/validate/{validateData}")
+    public ResponseEntity<String> validateUser(@PathVariable String validateData) {
+        this.usuarioService.validateUser(validateData);
+        return ResponseEntity.ok("La dirección de correo electrónico del usuario ha sido validada");
     }
 
     @PatchMapping("/block/{username}")

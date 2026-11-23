@@ -33,6 +33,9 @@ public class Usuario {
     @Column(nullable = false)
     private boolean activo;
 
+    @Column(nullable = false)
+    private boolean verificado;
+
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
@@ -50,6 +53,7 @@ public class Usuario {
         this.email = email;
         this.nombre = nombre;
         this.activo = true;
+        this.verificado = false;
         this.fechaCreacion = LocalDateTime.now();
         this.roles = roles;
     }
@@ -59,6 +63,7 @@ public class Usuario {
         this.email = request.getEmail();
         this.nombre = request.getNombre();
         this.activo = true;
+        this.verificado = false;
         this.fechaCreacion = LocalDateTime.now();
         this.roles = new HashSet<>();
         this.roles.add(rol);

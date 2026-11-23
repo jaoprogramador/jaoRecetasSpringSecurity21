@@ -1,13 +1,13 @@
 package com.jao.recetas.services.security.data;
 
-import com.jao.recetas.util.validation.ValidPassword;
+import com.jao.recetas.util.validation.ValidNewPassword;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor
-@ValidPassword
+@ValidNewPassword
 public class NewPasswordInfo {
     @NotBlank(message = "La contraseña actual del usuario es obligatoria")
     private String password;

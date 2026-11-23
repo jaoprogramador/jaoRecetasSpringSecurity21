@@ -10,10 +10,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -43,8 +41,11 @@ public class SecurityConfig {
                     // Endpoints públicos
                     http.requestMatchers("/api/usuarios/login").permitAll();
                     http.requestMatchers("/api/usuarios/email").permitAll();
+                    http.requestMatchers("/api/usuarios/signup").permitAll();
+                    http.requestMatchers("/api/usuarios/validate/**").permitAll();
                     // Endpoints privados
-                    http.requestMatchers("/api/usuarios/create").hasRole("ADMIN");
+                    //http.requestMatchers("/api/usuarios/create").hasRole("ADMIN");
+
                     //http.requestMatchers("/api/usuarios/create").hasAuthority("ADMIN");
                     //http.requestMatchers("/api/usuarios/create").permitAll();
                     http.requestMatchers("/api/usuarios/block/**").hasRole("ADMIN");

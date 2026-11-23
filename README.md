@@ -107,4 +107,29 @@ para mandar el mail. Si el token no es correcto nos devuelve codigo.9.No está a
 Testing basic login username rafa 1234
 - http://localhost:8090/api/usuarios/login copiamos token JWT
 - creamos usuario con token
-    
+54.- vamos a crear crear la funcionalidad para activar una cuenta de usuario por email y que sin activarla no nos deja acceder
+- creamos con flyway la propiedad verificado bool en bd
+- creamos en el model la propiedad verificado y en el constructor por defecto
+- En userDetailService creamos la validación de mensajes de nueva propiedad
+- modificamos el UsuarioRequest con el patrón para el password y la anotación ValidationMail
+- En el usuarioServiceImpl cambiamos el mensaje del mail
+- Modificamos el controller con un nuevo endpoint para logarnos: cambiamos create por signup, en controller, service y serviceImpl
+modificamos el util.validation
+- En usuarioServiceImpl creamos un nuevo metodo que valida el mail y lo decodifica
+- habilitamos el endpoint en securityConfig
+- Testeamos en postman a crear un nuevo usuario que en bd va a false
+- Nos logamos y nos salta el mensaje de que no está validado sin dar acceso. Vamos al mail, cricamos en el enlace y ya está activado. Lo siguiente es logarnos correctamente
+nuevos end points
+- POST http://localhost:8090/api/usuarios/signup(quitamos en postman la conf de auth bearer, debe ser básica)
+- GET http://localhost:8090/api/usuarios/validate/{validateData
+- nos intentamos logar con un post con pass diferentes y nos salta el validador
+- probramos con este y si nos deja {
+      "username":"david",
+      "password":"D@vid2026",
+      "confirmacion":"D@vid2026",
+      "email":"david@gmail.com",
+      "nombre":"David Rios"
+      }
+  en bd el registro se crea con la columna verificado a false
+- en el mail pulsamos en el link y nos modifica la columna verificado a true
+- ahora nos logamos con ese usuario y nos deja entrar

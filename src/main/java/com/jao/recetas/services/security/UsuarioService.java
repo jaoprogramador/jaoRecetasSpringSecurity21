@@ -8,7 +8,8 @@ import java.util.Optional;
 
 public interface UsuarioService {
     Optional<Usuario> findByUsername(String username);
-    void createUser(UsuarioRequest request);
+    void signup(UsuarioRequest request);
+    void validateUser(String validateData);
     void blockUser(String username);
     void changePassword(NewPasswordInfo info);
 

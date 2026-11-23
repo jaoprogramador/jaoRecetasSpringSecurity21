@@ -4,6 +4,7 @@ import com.jao.recetas.dto.UsuarioRequest;
 import com.jao.recetas.model.Rol;
 import com.jao.recetas.model.Usuario;
 
+import java.util.Base64;
 import java.util.Optional;
 
 import com.jao.recetas.repository.RolRepository;
@@ -38,7 +39,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public void createUser(UsuarioRequest request) {
+    public void signup(UsuarioRequest request) {
         log.info("UsuarioServiceImpl:::createUser",request);
         Optional<Usuario> usuarioBD = this.usuarioRepository.findOneByUsername(request.getUsername());
         log.info("UsuarioServiceImpl:::createUser usuarioBD",request.getUsername());
@@ -51,6 +52,9 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new InvalidOperationException("Ya existe un usuario con la misma dirección de correo");
         }
 
+        Usuario usuarioNuevo;
+
+
         try {
             Optional<Rol> rolBD = this.rolRepository.findOneByNombre("USER");
             log.info("UsuarioServiceImpl:::createUser::rolBD",rolBD);
@@ -60,6 +64,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             log.info("UsuarioServiceImpl:::createUser::request.getPassword()",request.getPassword());
             String password = this.passwordEncoder.encode(request.getPassword());
             Usuario usuario = new Usuario(request, password, rolBD.get());
+            usuarioNuevo = this.usuarioRepository.save(usuario);
             log.info("UsuarioServiceImpl:::createUser::rolBD.get()",rolBD.get());
             this.usuarioRepository.save(usuario);
         } catch (InvalidOperationException e) {
@@ -68,18 +73,48 @@ public class UsuarioServiceImpl implements UsuarioService {
             String message = String.format("Error de base de datos creando el usuario: %s", request.getUsername());
             throw new DatabaseException(message, e);
         }
-
+        String validateData = String.format("%d-%s", usuarioNuevo.getId(), usuarioNuevo.getUsername());
+        String codedData = new String(Base64.getEncoder().encode(validateData.getBytes()));
+        String enlace = "http://localhost:8090/api/usuarios/validate/" + codedData;
         String texto = String.format("""
                 Hola %s,
                 
-                Su usuario ha sido creado con las siguientes credenciales:
-                Nombre de usuario: %s
-                Contraseña: %s
+                Su usuario ha sido creado con las siguientes con el  nombre de usuario: %s.
+                Para activar su usuario, debe validar su dirección de correo electrónico haciendo clic en el enlace: %s
                 
                 Por seguridad, debe cambiar su contraseña a la brevedad posible.
-                """, request.getNombre(), request.getUsername(), request.getPassword());
+                """, request.getNombre(), request.getUsername(), enlace);
 
         this.sendEmailService.sendEmail(request.getEmail(), "Su usuario ha sido creado", texto);
+    }
+
+    @Override
+    public void validateUser(String validateData) {
+        String decodedData = new String(Base64.getDecoder().decode(validateData.getBytes()));
+        String[] parts = decodedData.split("-");
+        if (parts.length != 2) {
+            throw new InvalidOperationException("No se puede validar la dirección de correo electrónico");
+        }
+
+        int usuarioId = Integer.parseInt(parts[0]);
+        String username = parts[1];
+
+        try {
+            Optional<Usuario> usuarioDB = this.usuarioRepository.findById(usuarioId);
+            if (usuarioDB.isEmpty()) {
+                throw new ResourceNotFoundException("Imposible validar la dirección de correo de un usuario inexistente");
+            }
+            Usuario usuario = usuarioDB.get();
+            if (!usuario.getUsername().equals(username)) {
+                throw new InvalidOperationException("No se puede validar la dirección de correo por inconsistencia en los datos");
+            }
+
+            usuario.setVerificado(true);
+            this.usuarioRepository.save(usuario);
+        } catch (Exception e) {
+            String message = String.format("Error de base de datos validando el email del usuario: %s", username);
+            throw new DatabaseException(message, e);
+        }
     }
 
     @Override
